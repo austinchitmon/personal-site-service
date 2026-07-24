@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: Chitmon Backend
+pokemon:
+  base-url: https://pokeapi.co/api/v2
+  default-language: en

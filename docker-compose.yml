@@ -1,0 +1,8 @@
+services:
+  chitmon-backend:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      # Set to "local" to enable CORS for an Angular dev server on localhost:4200.
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-}

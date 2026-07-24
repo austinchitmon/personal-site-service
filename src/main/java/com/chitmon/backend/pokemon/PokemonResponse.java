@@ -3,6 +3,7 @@ package com.chitmon.backend.pokemon;
 
 public record PokemonResponse(
         String name,
-        int attack
+        PokemonStats stats,
+        String sprite
 ) {
 }

@@ -1,6 +1,6 @@
 services:
-  chitmon-backend:
-    # image is used as-is on the Oracle VM (`docker compose pull`); local dev can
+  personal-site-service:
+    # image is used as-is on the homelab VM (`docker compose pull`); local dev can
     # still run `docker compose up --build` to build from the Dockerfile instead.
     image: ghcr.io/austinchitmon/personal-site-service:latest
     build: .
@@ -10,3 +10,9 @@ services:
       # Set to "local" to enable CORS for an Angular dev server on localhost:4200.
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-}
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 3s
+      start_period: 30s
+      retries: 3

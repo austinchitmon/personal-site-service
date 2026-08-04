@@ -16,9 +16,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -29,13 +26,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Ampere A1 (the Oracle Always Free shape) is arm64 -- build for that
-      # architecture specifically rather than a slower multi-arch build.
+      # The homelab box is x86_64, same as the GH Actions runner, so no
+      # cross-arch emulation (QEMU) or platform pin is needed here.
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: .
-          platforms: linux/arm64
           push: true
           tags: |
             ${{ env.IMAGE }}:latest
@@ -45,27 +41,19 @@ jobs:
 
   deploy:
     needs: build-and-push
-    runs-on: ubuntu-latest
+    # Runs on the self-hosted runner installed on the homelab box itself --
+    # the homelab is LAN-only, so a GitHub-hosted runner can't reach it over
+    # SSH. This job executes locally on the target machine instead.
+    runs-on: [self-hosted, homelab]
     steps:
       - uses: actions/checkout@v4
 
-      - name: Copy docker-compose.yml to the VM
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.ORACLE_VM_HOST }}
-          username: ${{ secrets.ORACLE_VM_USER }}
-          key: ${{ secrets.ORACLE_VM_SSH_KEY }}
-          source: "docker-compose.yml"
-          target: "/opt/chitmon-backend"
+      - name: Copy docker-compose.yml into place
+        run: cp docker-compose.yml /opt/personal-site-service/docker-compose.yml
 
-      - name: Pull and restart on the VM
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.ORACLE_VM_HOST }}
-          username: ${{ secrets.ORACLE_VM_USER }}
-          key: ${{ secrets.ORACLE_VM_SSH_KEY }}
-          script: |
-            cd /opt/chitmon-backend
-            docker compose pull
-            docker compose up -d
-            docker image prune -f
+      - name: Pull and restart
+        working-directory: /opt/personal-site-service
+        run: |
+          docker compose pull
+          docker compose up -d
+          docker image prune -f

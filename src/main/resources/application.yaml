@@ -14,3 +14,7 @@ spring:
 pokemon:
   base-url: https://pokeapi.co/api/v2
   default-language: en
+supabase:
+  issuer-uri: ${SUPABASE_ISSUER_URI:https://hjdkrtgkjoiwjikbpvje.supabase.co/auth/v1}
+  jwks-uri: ${SUPABASE_JWKS_URI:https://hjdkrtgkjoiwjikbpvje.supabase.co/auth/v1/.well-known/jwks.json}
+  audience: ${SUPABASE_AUDIENCE:authenticated}

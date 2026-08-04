@@ -1,4 +1,24 @@
 services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 3s
+      start_period: 10s
+      retries: 5
+    # No ports published here on purpose: this file is deployed as-is to the
+    # homelab, where Postgres must stay internal-network-only. Local dev's
+    # host port is published in docker-compose.override.yml instead, which
+    # the deploy pipeline never copies to the homelab.
+
   personal-site-service:
     # image is used as-is on the homelab VM (`docker compose pull`); local dev can
     # still run `docker compose up --build` to build from the Dockerfile instead.
@@ -9,6 +29,12 @@ services:
     environment:
       # Set to "local" to enable CORS for an Angular dev server on localhost:4200.
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8080/actuator/health"]
@@ -16,3 +42,6 @@ services:
       timeout: 3s
       start_period: 30s
       retries: 3
+
+volumes:
+  postgres-data:

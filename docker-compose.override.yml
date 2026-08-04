@@ -1,0 +1,11 @@
+# Auto-loaded by `docker compose up` whenever this file sits next to
+# docker-compose.yml -- this is what lets a locally-run IDE/mvn process
+# (outside Docker) reach Postgres at localhost:5432.
+#
+# IMPORTANT: the deploy pipeline only copies docker-compose.yml to the
+# homelab -- never this file -- so prod Postgres stays unpublished. Do not
+# change the deploy step to a wildcard copy without reconsidering this.
+services:
+  postgres:
+    ports:
+      - "5432:5432"

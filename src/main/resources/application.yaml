@@ -1,6 +1,16 @@
 spring:
   application:
     name: Chitmon Backend
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/chitmon}
+    username: ${SPRING_DATASOURCE_USERNAME:chitmon_app}
+    password: ${SPRING_DATASOURCE_PASSWORD:changeme}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: false # migrations run per-schema via FlywayMultiSchemaConfig instead
 pokemon:
   base-url: https://pokeapi.co/api/v2
   default-language: en

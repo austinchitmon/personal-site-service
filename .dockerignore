@@ -7,3 +7,4 @@ target
 mvnw
 mvnw.cmd
 *.md
+.env

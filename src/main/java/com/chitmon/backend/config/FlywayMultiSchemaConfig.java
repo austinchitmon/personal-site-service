@@ -3,9 +3,10 @@ package com.chitmon.backend.config;
 import java.util.List;
 import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
-import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.jpa.autoconfigure.EntityManagerFactoryDependsOnPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 /**
  * Runs Flyway independently per-schema/subproject instead of relying on Spring
@@ -21,22 +22,39 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class FlywayMultiSchemaConfig {
 
-    private static final List<String> MANAGED_SCHEMAS = List.of("pokemon");
+    private static final List<String> MANAGED_SCHEMAS = List.of("core", "pokemon");
 
+    /**
+     * Migrations run inline here (bean-creation time), not via an
+     * ApplicationRunner (post-refresh time). spring.flyway.enabled=false
+     * disables Boot's normal Flyway/EntityManagerFactory dependency wiring, so
+     * without this, JPA's ddl-auto=validate would run before these migrations
+     * ever create their schemas/tables. FlywayJpaDependencyConfig below forces
+     * that ordering by naming this bean.
+     */
     @Bean
-    public ApplicationRunner flywayMultiSchemaRunner(DataSource dataSource) {
-        return args -> {
-            for (String schema : MANAGED_SCHEMAS) {
-                Flyway.configure()
-                        .dataSource(dataSource)
-                        .schemas(schema)
-                        .defaultSchema(schema)
-                        .createSchemas(true)
-                        .table("flyway_schema_history")
-                        .locations("classpath:db/migration/" + schema)
-                        .load()
-                        .migrate();
-            }
-        };
+    public FlywayMultiSchemaMigrator flywayMultiSchemaMigrator(DataSource dataSource) {
+        for (String schema : MANAGED_SCHEMAS) {
+            Flyway.configure()
+                    .dataSource(dataSource)
+                    .schemas(schema)
+                    .defaultSchema(schema)
+                    .createSchemas(true)
+                    .table("flyway_schema_history")
+                    .locations("classpath:db/migration/" + schema)
+                    .load()
+                    .migrate();
+        }
+        return new FlywayMultiSchemaMigrator();
+    }
+
+    public static class FlywayMultiSchemaMigrator {
+    }
+
+    @Component
+    static class FlywayJpaDependencyConfig extends EntityManagerFactoryDependsOnPostProcessor {
+        FlywayJpaDependencyConfig() {
+            super("flywayMultiSchemaMigrator");
+        }
     }
 }

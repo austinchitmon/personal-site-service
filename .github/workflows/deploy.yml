@@ -1,0 +1,59 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main]
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # The homelab box is x86_64, same as the GH Actions runner, so no
+      # cross-arch emulation (QEMU) or platform pin is needed here.
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGE }}:latest
+            ${{ env.IMAGE }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build-and-push
+    # Runs on the self-hosted runner installed on the homelab box itself --
+    # the homelab is LAN-only, so a GitHub-hosted runner can't reach it over
+    # SSH. This job executes locally on the target machine instead.
+    runs-on: [self-hosted, homelab]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy docker-compose.yml into place
+        run: cp docker-compose.yml /opt/personal-site-service/docker-compose.yml
+
+      - name: Pull and restart
+        working-directory: /opt/personal-site-service
+        run: |
+          docker compose pull
+          docker compose up -d
+          docker image prune -f

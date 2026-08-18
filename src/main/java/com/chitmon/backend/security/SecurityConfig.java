@@ -34,7 +34,7 @@ public class SecurityConfig {
                         // this, preflight to an authenticated path would be rejected here and
                         // the browser would never send the real request.
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/me", "/users/**").authenticated()
+                        .requestMatchers("/me", "/users/**", "/shipment-tracker/**").authenticated()
                         .anyRequest().permitAll())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt -> jwt.decoder(jwtDecoder)))
                 // Runs after bearer-token authentication succeeds, so it has a Jwt to read.

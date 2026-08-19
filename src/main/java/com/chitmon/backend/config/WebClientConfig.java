@@ -24,4 +24,11 @@ public class WebClientConfig {
                 .exchangeStrategies(exchangeStrategies)
                 .build();
     }
+
+    // No baseUrl: the shipment tracker's USPS client passes a full URL
+    // template (with a {trackingNumber} placeholder) per call.
+    @Bean
+    public WebClient uspsWebClient() {
+        return WebClient.builder().build();
+    }
 }

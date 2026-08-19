@@ -37,7 +37,7 @@ What comes up:
 - `personal-site-service` on http://localhost:8080
 - `postgres` (Postgres 17), reachable at `localhost:5432`
 
-On startup, the app automatically creates/migrates each managed schema (currently `pokemon`) via Flyway — see `FlywayMultiSchemaConfig`.
+On startup, the app automatically creates/migrates each managed schema via Flyway — see `FlywayMultiSchemaConfig`.
 
 Data persists across restarts in the named volume `postgres-data`:
 - `docker compose down` — stops containers, keeps the volume (and your data)

@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 @Configuration
 public class FlywayMultiSchemaConfig {
 
-    private static final List<String> MANAGED_SCHEMAS = List.of("core", "pokemon", "shipment_tracker");
+    private static final List<String> MANAGED_SCHEMAS = List.of("core", "pokemon");
 
     /**
      * Migrations run inline here (bean-creation time), not via an

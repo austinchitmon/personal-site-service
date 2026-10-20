@@ -1,6 +1,6 @@
 # Chitmon Backend
 
-Backend monorepo for [chitmon.com](https://chitmon.com) — domain-based API modules (pokemon, blog, ...).
+Backend for [chitmon.com](https://chitmon.com), organized into user and Pokémon domains. The Angular frontend is in the sibling `personal-site` repository; its [architecture notes](../personal-site/docs/architecture.md) describe the complete system and verified homelab setup (reviewed 2026-10-20).
 
 ## Tech stack
 
@@ -9,6 +9,15 @@ Backend monorepo for [chitmon.com](https://chitmon.com) — domain-based API mod
 - PostgreSQL 17, with one schema per sub-project (e.g. `pokemon`)
 - Flyway for schema migrations, run per-schema on application startup
 - Docker / Docker Compose for local development and deployment
+
+## Architecture
+
+- Spring MVC controllers delegate to domain services; persisted domains use JPA repositories. WebClient handles external HTTP calls.
+- Supabase provides hosted Google OAuth and sessions. Spring validates ES256 access tokens using Supabase JWKS, issuer, expiry, and audience. The API is stateless; `UserSyncFilter` mirrors authenticated user profile claims into `core.users`.
+- `/me` and `/users/**` require authentication; other routes are currently public. New sensitive endpoints need explicit rules in `SecurityConfig`. Frontend admin guards are not backend authorization.
+- Active PostgreSQL schemas are `core` (shared users) and `pokemon` (bootstrap only). Each has an independent Flyway history; migrations run before Hibernate schema validation. Add new versioned migrations rather than editing applied ones.
+- Pokémon responses come from PokeAPI. Shipment tracking, its carrier endpoints, and its scraper have been removed. The retired `shipment_tracker` schema is no longer managed or created on fresh installations; its original V1 migration remains unchanged for history, and existing tables/data are preserved.
+- Cat/resume `/supabase/...` URLs work on the public API host through additional routing outside Spring. Direct requests to Spring return 404 for those paths; the routing configuration was not inspected.
 
 ## Local setup
 
@@ -64,14 +73,26 @@ For day-to-day development (hot reload via `spring-boot-devtools`), run Postgres
    ```
    docker compose up postgres -d
    ```
-2. Run the app outside Docker:
+2. Run the app outside Docker with the `local` profile active (this enables CORS for an Angular dev server on `localhost:4200` — see `CorsConfig`; without it, cross-origin requests from a local frontend get rejected):
    ```
-   ./mvnw spring-boot:run
+   SPRING_PROFILES_ACTIVE=local ./mvnw spring-boot:run
    ```
-   (or run/debug `ChitmonBackendApplication` from your IDE)
+   (or, from your IDE, set the `SPRING_PROFILES_ACTIVE=local` env var / active profile on the `ChitmonBackendApplication` run/debug config)
 
 The app's defaults in `application.yaml` already point at `localhost:5432` when no `SPRING_DATASOURCE_*` env vars are set, so this works with no extra configuration — it connects to the same Postgres container via the port `docker-compose.override.yml` publishes.
 
 ### Adding a new schema/migration
 
 See the doc comment on `FlywayMultiSchemaConfig` (`src/main/java/com/chitmon/backend/config/FlywayMultiSchemaConfig.java`) for the convention used to add a new sub-project's schema and migrations.
+
+## Production deployment
+
+Pushes to `main` trigger `.github/workflows/deploy.yml`: a GitHub-hosted job builds and publishes the container to GHCR with `latest` and commit tags. A self-hosted runner on the homelab then copies only `docker-compose.yml` into `/opt/personal-site-service`, pulls images, and updates the stack.
+
+`api.chitmon.com` reaches the Spring application on `localhost:8080` through Cloudflare Tunnel. PostgreSQL runs in the same Compose stack. The homelab has a manually maintained override that publishes PostgreSQL on `127.0.0.1:5432` for SSH-tunneled tools; preserve this file and never copy the development override into production.
+
+The public and local `/actuator/health` endpoints returned `UP` during the 2026-10-20 review, and the then-active `core`, `pokemon`, and `shipment_tracker` schemas had successful V1 migrations. Only `core` and `pokemon` are managed after shipment tracking is retired. These are dated observations; recheck live state before deployment changes.
+
+## Verification
+
+Run tests with `./mvnw test` (or `./mvnw.cmd test` on Windows). Current automated coverage is a Spring context-load test and requires a reachable configured database. The Docker build packages with tests skipped; deployment is not a substitute for testing changes.

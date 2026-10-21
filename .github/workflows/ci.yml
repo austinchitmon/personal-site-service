@@ -20,4 +20,4 @@ jobs:
       # These exercise the file endpoint in isolation. The older context-load
       # test requires a PostgreSQL instance and is not part of this job.
       - name: Test PDF responses, live file replacement, and failure logging
-        run: ./mvnw -B '-Dtest=Resume*Test' test
+        run: sh ./mvnw -B '-Dtest=Resume*Test' test

@@ -2,6 +2,9 @@ HELP.md
 target/
 public-files/*
 !public-files/.gitkeep
+monitoring-data/*
+!monitoring-data/.gitkeep
+__pycache__/
 
 ### Environment ###
 .env

@@ -1,4 +1,4 @@
-name: Resume Download Tests
+name: Backend Checks
 
 on:
   pull_request:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  resume-tests:
+  backend-tests:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -17,7 +17,9 @@ jobs:
           distribution: temurin
           java-version: '21'
           cache: maven
-      # These exercise the file endpoint in isolation. The older context-load
+      # These exercise public files and protected monitoring. The older context-load
       # test requires a PostgreSQL instance and is not part of this job.
-      - name: Test PDF responses, live file replacement, and failure logging
-        run: sh ./mvnw -B '-Dtest=Resume*Test' test
+      - name: Test resume downloads, monitoring, and JWT authorization
+        run: sh ./mvnw -B '-Dtest=Resume*Test,Homelab*Test,DatabaseHealthProbeTest' test
+      - name: Test collector sanitization and failure handling
+        run: python3 -m unittest discover -s monitoring/tests -v

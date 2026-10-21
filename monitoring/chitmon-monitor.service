@@ -1,0 +1,20 @@
+[Unit]
+Description=Collect read-only Chitmon homelab status
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /usr/local/lib/chitmon-monitor/collect.py
+TimeoutStartSec=20
+User=root
+Group=root
+UMask=0022
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/chitmon-monitor
+RestrictAddressFamilies=AF_UNIX
+CapabilityBoundingSet=
+LockPersonality=true
+MemoryDenyWriteExecute=true

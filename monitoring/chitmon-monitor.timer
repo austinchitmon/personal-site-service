@@ -1,0 +1,11 @@
+[Unit]
+Description=Refresh Chitmon homelab status every 15 seconds
+
+[Timer]
+OnBootSec=10s
+OnUnitActiveSec=15s
+AccuracySec=1s
+Unit=chitmon-monitor.service
+
+[Install]
+WantedBy=timers.target

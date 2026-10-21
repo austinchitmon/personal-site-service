@@ -25,6 +25,13 @@ public class UserSyncFilter extends OncePerRequestFilter {
     }
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        // JWT authorization still applies. Monitoring must work while PostgreSQL is down.
+        String path = request.getRequestURI().substring(request.getContextPath().length());
+        return path.equals("/admin/homelab") || path.startsWith("/admin/homelab/");
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
         if (SecurityContextHolder.getContext().getAuthentication() instanceof JwtAuthenticationToken auth) {

@@ -16,6 +16,8 @@ pokemon:
   default-language: en
 resume:
   file-path: ${RESUME_FILE_PATH:./public-files/resume.pdf}
+homelab:
+  snapshot-path: ${HOMELAB_SNAPSHOT_PATH:./monitoring-data/status.json}
 supabase:
   issuer-uri: ${SUPABASE_ISSUER_URI:https://hjdkrtgkjoiwjikbpvje.supabase.co/auth/v1}
   jwks-uri: ${SUPABASE_JWKS_URI:https://hjdkrtgkjoiwjikbpvje.supabase.co/auth/v1/.well-known/jwks.json}

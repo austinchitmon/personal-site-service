@@ -32,6 +32,19 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      RESUME_FILE_PATH: /app/public-files/resume.pdf
+    volumes:
+      - type: bind
+        source: ${RESUME_HOST_DIRECTORY:-/srv/chitmon/public}
+        target: /app/public-files
+        read_only: true
+        bind:
+          create_host_path: false
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     depends_on:
       postgres:
         condition: service_healthy

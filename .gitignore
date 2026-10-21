@@ -1,5 +1,7 @@
 HELP.md
 target/
+public-files/*
+!public-files/.gitkeep
 
 ### Environment ###
 .env

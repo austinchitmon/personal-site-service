@@ -6,6 +6,14 @@
 # homelab -- never this file -- so prod Postgres stays unpublished. Do not
 # change the deploy step to a wildcard copy without reconsidering this.
 services:
+  personal-site-service:
+    volumes:
+      - type: bind
+        source: ./public-files
+        target: /app/public-files
+        read_only: true
+        bind:
+          create_host_path: false
   postgres:
     ports:
       - "5432:5432"

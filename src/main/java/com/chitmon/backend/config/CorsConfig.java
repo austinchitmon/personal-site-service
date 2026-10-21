@@ -17,9 +17,10 @@ public class CorsConfig {
                 @Override
                 public void addCorsMappings(CorsRegistry corsRegistry) {
                     corsRegistry.addMapping("/**")
-                            .allowedOrigins("http://localhost:4200")
-                            .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                            .allowedHeaders("*");
+                            .allowedOrigins("http://localhost:4200", "http://127.0.0.1:4200")
+                            .allowedMethods("GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS")
+                            .allowedHeaders("*")
+                            .exposedHeaders("X-Request-Id");
                 }
             };
         }
@@ -35,8 +36,9 @@ public class CorsConfig {
                 public void addCorsMappings(CorsRegistry corsRegistry) {
                     corsRegistry.addMapping("/**")
                             .allowedOrigins("https://chitmon.com")
-                            .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                            .allowedHeaders("*");
+                            .allowedMethods("GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS")
+                            .allowedHeaders("*")
+                            .exposedHeaders("X-Request-Id");
                 }
             };
         }

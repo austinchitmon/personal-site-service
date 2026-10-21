@@ -14,6 +14,8 @@ spring:
 pokemon:
   base-url: https://pokeapi.co/api/v2
   default-language: en
+resume:
+  file-path: ${RESUME_FILE_PATH:./public-files/resume.pdf}
 supabase:
   issuer-uri: ${SUPABASE_ISSUER_URI:https://hjdkrtgkjoiwjikbpvje.supabase.co/auth/v1}
   jwks-uri: ${SUPABASE_JWKS_URI:https://hjdkrtgkjoiwjikbpvje.supabase.co/auth/v1/.well-known/jwks.json}
